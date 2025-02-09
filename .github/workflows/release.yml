@@ -1,0 +1,66 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  #  version tags v*.*.*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: thumbv7m-none-eabi
+        override: true
+
+    - name: Install target
+      run: rustup target add thumbv7m-none-eabi
+
+    - name: Build
+      run: cargo build --release --target thumbv7m-none-eabi
+
+    - name: Upload binary as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: led_effects
+        path: target/thumbv7m-none-eabi/release/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download binary artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: led_effects
+        path: ./artifacts
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          Automatic release created for ${{ github.ref }}.
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./artifacts/release/led_effects
+        asset_name: led_effects
+        asset_content_type: application/octet-stream
