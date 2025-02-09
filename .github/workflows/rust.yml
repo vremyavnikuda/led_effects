@@ -11,10 +11,11 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --target thumbv7m-none-eabi --features defmt
+      - uses: actions/checkout@v4
+      - name: Install target
+        run: rustup target add thumbv7m-none-eabi
+      - name: Build
+        run: cargo build --target thumbv7m-none-eabi --features defmt
