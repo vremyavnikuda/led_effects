@@ -164,7 +164,7 @@ cargo run --example stm32f1xx --features defmt --release
 ```
 ___
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
 ___
 ## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
