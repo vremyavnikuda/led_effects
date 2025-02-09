@@ -170,4 +170,3 @@ ___
 Contributions are welcome! Please open an issue or submit a pull request.
 ___
 ## Acknowledgements
-Special thanks to the Rust Embedded community for their excellent libraries and support.
