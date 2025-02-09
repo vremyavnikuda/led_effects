@@ -42,7 +42,6 @@ fn main() -> ! {
 
     let mut gpioa = dp.GPIOA.split();
 
-    // Настройка PWM на PA0 (TIM2_CH1)
     let c1 = gpioa.pa0.into_alternate_push_pull(&mut gpioa.crl);
     let mut pwm = Timer::new(dp.TIM2, &clocks).pwm(
         c1,
@@ -50,10 +49,12 @@ fn main() -> ! {
         1.kHz(),
     );
 
-    // Получаем канал PWM
     let max_duty = pwm.get_max_duty();
     let mut pwm_ch = pwm.split().0;
     pwm_ch.enable();
+
+    #[cfg(feature = "defmt")]
+    defmt::info!("PWM channel enabled with max duty: {}", max_duty);
 
     let mut led = LEDEffect::new(pwm_ch, max_duty / 50, max_duty)
         .expect("Failed to create LED effect");
