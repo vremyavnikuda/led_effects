@@ -1,0 +1,14 @@
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+# Использовать этот линкер для ARM Cortex-M
+rustflags = [
+    "-C", "link-arg=-Tlink.x",
+]
+
+runner = "probe-run --chip STM32F103C8"
+
+# Установить по умолчанию целевую платформу для STM32F1
+[build]
+target = "thumbv7m-none-eabi"     # Cortex-M3
+
+[env]
+DEFMT_LOG = "trace"

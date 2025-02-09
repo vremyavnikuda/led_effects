@@ -1,0 +1,78 @@
+#![no_std]
+#![no_main]
+
+use cortex_m_rt::entry;
+use panic_probe as _;
+use stm32f1xx_hal::{
+    pac,
+    prelude::*,
+    timer::{Timer, Channel},
+    pwm::*,
+};
+use led_effects::LEDEffect;
+
+#[cfg(feature = "defmt")]
+use defmt_rtt as _;
+
+#[entry]
+fn main() -> ! {
+    let cp = cortex_m::Peripherals::take().unwrap();
+    let dp = pac::Peripherals::take().unwrap();
+
+    let mut flash = dp.FLASH.constrain();
+    let rcc = dp.RCC.constrain();
+    let mut afio = dp.AFIO.constrain();
+
+    let clocks = rcc.cfgr
+        .use_hse(8.MHz())
+        .sysclk(48.MHz())
+        .pclk1(24.MHz())
+        .freeze(&mut flash.acr);
+
+    let mut gpioa = dp.GPIOA.split();
+
+    // Настройка PWM на PA0 (TIM2_CH1)
+    let c1 = gpioa.pa0.into_alternate_push_pull(&mut gpioa.crl);
+    let mut pwm = Timer::new(dp.TIM2, &clocks).pwm(
+        c1,
+        &mut afio.mapr,
+        1.kHz(),
+    );
+
+    // Получаем канал PWM
+    let max_duty = pwm.get_max_duty();
+    let mut pwm_ch = pwm.split().0;
+    pwm_ch.enable();
+
+    let mut led = LEDEffect::new(pwm_ch, max_duty / 50, max_duty)
+        .expect("Failed to create LED effect");
+
+    #[cfg(feature = "defmt")]
+    defmt::info!("LED Effects Demo Starting...");
+
+    loop {
+        if let Err(_) = led.breath(5454) {
+            #[cfg(feature = "defmt")]
+            defmt::error!("Breathing effect failed");
+            continue;
+        }
+
+        cortex_m::asm::delay(48_000_000);
+
+        if let Err(_) = led.heartbeat(2, 1, 60) {
+            #[cfg(feature = "defmt")]
+            defmt::error!("Heartbeat effect failed");
+            continue;
+        }
+
+        cortex_m::asm::delay(48_000_000);
+    }
+}
+
+#[cortex_m_rt::exception]
+unsafe fn HardFault(ef: &cortex_m_rt::ExceptionFrame) -> ! {
+    #[cfg(feature = "defmt")]
+    defmt::error!("Hard Fault");
+
+    loop {}
+}

@@ -1,0 +1,52 @@
+[package]
+name = "led_effects"
+version = "0.0.1"
+edition = "2024"
+authors = ["Andrew Nevsky <hopperplayer0@gmail.com>"]
+description = "LED effects library for embedded Rust"
+license = "MIT"
+repository = "https://github.com/vremyavnikuda/led_effects"
+documentation = "https://docs.rs/led_effects"
+keywords = ["embedded", "led", "effects", "no-std", "pwm"]
+categories = ["embedded", "no-std"]
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]
+# Используем embedded-hal 0.2.7 для совместимости
+embedded-hal = "0.2.7"
+nb = "1.1.0"
+defmt = { version = "0.3", optional = true }
+critical-section = "1.1"
+cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
+
+[dev-dependencies]
+embedded-hal-mock = "0.9"
+cortex-m-rt = "0.7"
+panic-probe = { version = "0.3", features = ["print-defmt"] }
+defmt-rtt = "0.4"
+stm32f1xx-hal = { version = "0.10", features = ["stm32f103", "rt"] }
+
+[target.'cfg(target_arch = "arm")'.dependencies]
+cortex-m-rt = "0.7"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+targets = [
+    "thumbv6m-none-eabi",
+    "thumbv7m-none-eabi",
+    "thumbv7em-none-eabi",
+    "thumbv7em-none-eabihf",
+]
+
+[profile.dev]
+opt-level = 1
+debug = true
+
+[profile.release]
+opt-level = 3
+debug = true
+lto = true
