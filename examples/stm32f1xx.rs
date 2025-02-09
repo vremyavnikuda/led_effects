@@ -14,6 +14,17 @@ use led_effects::LEDEffect;
 #[cfg(feature = "defmt")]
 use defmt_rtt as _;
 
+/// Entry point of the embedded application.
+///
+/// This function initializes the peripherals and configures the system clock.
+/// It sets up the PWM on pin PA0 using TIM2_CH1 at a frequency of 1 kHz.
+/// An LED effect is created and demonstrated using PWM signals, implementing
+/// both a breathing and heartbeat effect in an infinite loop. Error handling
+/// is performed with optional logging via defmt for debugging purposes.
+///#[entry]
+///fn main() -> ! {
+///    // Function implementation
+///}
 #[entry]
 fn main() -> ! {
     let cp = cortex_m::Peripherals::take().unwrap();
@@ -69,6 +80,15 @@ fn main() -> ! {
     }
 }
 
+/// This function handles the Hard Fault exception in the Cortex-M processor.
+///
+/// # Safety
+/// This function is marked as `unsafe` because it deals with low-level
+/// exception handling that could lead to undefined behavior if misused.
+///
+/// This function enters an infinite loop upon encountering a Hard Fault
+/// to halt the system, preventing further execution. If the `defmt` feature
+/// is enabled, it logs the occurrence of the Hard Fault.
 #[cortex_m_rt::exception]
 unsafe fn HardFault(ef: &cortex_m_rt::ExceptionFrame) -> ! {
     #[cfg(feature = "defmt")]
